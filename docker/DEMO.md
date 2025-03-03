@@ -1,5 +1,4 @@
 
-
 ```bash
 # Sent to node 2, should fail
 target/debug/sov-cli submit-transaction examples/test-data/keys/token_deployer_private_key.json Bank examples/test-data/requests/create_token.json 0 http://127.0.0.1:12346

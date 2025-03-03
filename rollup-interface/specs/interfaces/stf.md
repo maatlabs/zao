@@ -2,17 +2,11 @@
 
 ## Overview
 
-The state transition function is the "business logic" of a rollup.
-It is defined in a particular zkVM (since implementation details like hash and proof formats functions need to change). However,
-an implementation of an STF may be reused across multiple DA layers.
+The state transition function is the "business logic" of a rollup. It is defined in a particular zkVM (since implementation details like hash and proof formats functions need to change). However, an implementation of an STF may be reused across multiple DA layers.
 
-The Sovereign SDK guarantees that all relevant data blobs will be delivered to the STF for processing
-exactly once, in the order that they appear on the DA layer. The STF is responsible for implementing its own metering
-and billing (to prevent spam).
+The Sovereign SDK guarantees that all relevant data blobs will be delivered to the STF for processing exactly once, in the order that they appear on the DA layer. The STF is responsible for implementing its own metering and billing (to prevent spam).
 
-The SDK also allows (and expects) the STF to process any proofs that are posted onto the DA layer to
-allow honest provers to be rewarded for their work, and to allow
-adaptive gas pricing depending on prover throughput.
+The SDK also allows (and expects) the STF to process any proofs that are posted onto the DA layer to allow honest provers to be rewarded for their work, and to allow adaptive gas pricing depending on prover throughput.
 
 ## Required Methods
 
@@ -20,8 +14,7 @@ adaptive gas pricing depending on prover throughput.
 
 - **Usage:**
 
-  - Called exactly once at the rollup's genesis, prior to processing batches.
-    This method is used to perform one-time initialization, such as minting the rollup's native token.
+  - Called exactly once at the rollup's genesis, prior to processing batches. This method is used to perform one-time initialization, such as minting the rollup's native token.
 
 - **Arguments**
 
@@ -33,8 +26,7 @@ adaptive gas pricing depending on prover throughput.
 
 - **Usage:**
 
-  - Called exactly once for each slot (DA layer block) to allow the rollup to process the data from that slot.
-    This method is invoked whether or not the slot contains any data relevant to the rollup.
+  - Called exactly once for each slot (DA layer block) to allow the rollup to process the data from that slot. This method is invoked whether the slot contains any data relevant to the rollup.
 
 - **Arguments**
 

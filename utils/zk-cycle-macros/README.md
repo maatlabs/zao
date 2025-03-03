@@ -1,7 +1,9 @@
 ## Zk-cycle-macros
+
 * Contains the `cycle-tracker` macro which can be used to annotate functions that run inside the risc0 vm
 * In order to use the macro, the following changes need to be made
 * Cargo.toml
+
 ```toml
 [dependencies]
 sov-zk-cycle-macros = {path = "../../utils/zk-cycle-macros", optional=true}
@@ -12,10 +14,12 @@ sov-zk-cycle-utils = {path = "../../utils/zk-cycle-utils", optional=true}
 [features]
 bench = ["sov-zk-cycle-macros/bench","sov-zk-cycle-utils", "risc0-zkvm","risc0-zkvm-platform"]
 ```
+
 * The feature gating is needed because we don't want the cycle tracker scaffolding to be used unless the `bench` feature is enabled
 * If the `bench` feature is not enabled, the risc0 host will not be built with the necessary syscalls to support tracking cycles
 * The additional imports are necessary because the macro wraps the user function with the necessary code for tracking the number of cycles before and after the function execution
 * The rust code that needs to use the `cycle_tracker` macro needs to import it and then annotate the function with it
+
 ```rust,ignore
 //
 #[cfg(all(target_os = "zkvm", feature = "bench"))]

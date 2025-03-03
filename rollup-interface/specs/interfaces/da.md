@@ -14,97 +14,58 @@ Let's go through each of these tasks in detail:
 
 ### Data Availability
 
-Rollups are designed to allow arbitrary state machines to inherit security guarantees
-of an underlying L1 blockchain. In order for these guarantees to hold, the rollup's data must be "available".
-Otherwise, an adversary can freeze the rollup by publishing a new state root that incorporates a valid
-but secret state update. Since no one else knows the new state of the system, honest participants will
-be unable to post new blocks.
+Rollups are designed to allow arbitrary state machines to inherit security guarantees of an underlying L1 blockchain. In order for these guarantees to hold, the rollup's data must be "available". Otherwise, an adversary can freeze the rollup by publishing a new state root that incorporates a valid but secret state update. Since no one else knows the new state of the system, honest participants will be unable to post new blocks.
 
-In the Sovereign SDK, we assume that data published on an underlying L1 is available, and simply check in-proof
-that the data in question really is included in the L1's history. It is the responsibility of the rollup developer
-to choose a chain that provides suitable data availability guarantees for their application.
+In the Sovereign SDK, we assume that data published on an underlying L1 is available, and simply check in-proof that the data in question really is included in the L1's history. It is the responsibility of the rollup developer to choose a chain that provides suitable data availability guarantees for their application.
 
 ### Rate Limiting and Priority
 
-No chain has infinite capacity. So, in order to ensure robust operation, chains need to ensure that transactions
-can be prioritized. Since transactions on the rollup create useful economic activity, we assume that, over time,
-honest sequencers, including "real" transactions, should be able to generate revenue. They can use this revenue
-to bid for blockspace on the L1. By contrast, dishonest sequencers sending only "spam" transactions do not generate
-revenue. For DOS resistance, it's vital that these dishonest sequencers not be able to "crowd out" honest sequencers
-permanently. So, sending transactions on the L1 must be costly. In addition, the fee paid on the L1 should be
-proportional to the demand, so that the cost of crowding out honest rollup transactions rises with the value
+No chain has infinite capacity. So, in order to ensure robust operation, chains need to ensure that transactions can be prioritized. Since transactions on the rollup create useful economic activity, we assume that, over time, honest sequencers, including "real" transactions, should be able to generate revenue. They can use this revenue to bid for blockspace on the L1. By contrast, dishonest sequencers sending only "spam" transactions do not generate revenue. For DOS resistance, it's vital that these dishonest sequencers not be able to "crowd out" honest sequencers permanently. So, sending transactions on the L1 must be costly. In addition, the fee paid on the L1 should be proportional to the demand, so that the cost of crowding out honest rollup transactions rises with the value
 of those transactions.
 
 ### Sender Attestation
 
-One underappreciated strength of layer 1 blockchains is their ability to prune
-out invalid transactions before they get included in blocks. Since most academic work on blockchains abstracts
-the peer-to-peer layer as a simple gossip network, it has not (to our knowledge) been pointed out that L1s
-"hyperscale" in their ability to weed out invalid transactions. In other words, the ability of a typical L1
-to withstand a DOS attack _based on invalid transactions_ scales linearly with the number of full nodes.
+One underappreciated strength of layer 1 blockchains is their ability to prune out invalid transactions before they get included in blocks. Since most academic work on blockchains abstracts the peer-to-peer layer as a simple gossip network, it has not (to our knowledge) been pointed out that L1s "hyperscale" in their ability to weed out invalid transactions. In other words, the ability of a typical L1 to withstand a DOS attack _based on invalid transactions_ scales linearly with the number of full nodes.
 
-One simple DOS attack on a blockchain is to submit a large number of plausible-looking transactions into the mempool,
-all of which have invalid signatures. Since the signatures are invalid, nobody can be charged on-chain for the spam.
-But, since the transactions look plausible, full nodes have to do the work of checking the signatures. Since it's
-much cheaper to pick some random bytes that look like a signature than it is to check the signature's validity,
-a resource constrained attacker can launch a fairly effective spam attack with this method.
+One simple DOS attack on a blockchain is to submit a large number of plausible-looking transactions into the mempool, all of which have invalid signatures. Since the signatures are invalid, nobody can be charged on-chain for the spam. But, since the transactions look plausible, full nodes have to do the work of checking the signatures. Since it's much cheaper to pick some random bytes that look like a signature than it is to check the signature's validity, a resource constrained attacker can launch a fairly effective spam attack with this method.
 
-But, L1s aren't vulnerable. Why not? Because full nodes refuse to gossip invalid transactions, disconnect
-from any nodes that do, and only open new connections at a limited rate. This prevents the attacker from
-either overwhelming individual peers or - even worse - getting his spam transactions included in the final
-ledger.
+But, L1s aren't vulnerable. Why not? Because full nodes refuse to gossip invalid transactions, disconnect from any nodes that do, and only open new connections at a limited rate. This prevents the attacker from either overwhelming individual peers or - even worse - getting his spam transactions included in the final ledger.
 
-Because Sovereign SDK chains are designed to operate over a "lazy" ledger which contains invalid transactions,
-they don't inherit this property by default. To compensate, the Sovereign
-SDK uses a simple trick: we force sequencers to register
-on the L2 chain by bonding some (L2) tokens _and_ claiming ownerships of an L1 address. Using this
-trick, we can offload the sequencer signature checks to the L1. At the rollup level, we only process batches
-that have been sent by bonded sequencers (who we can slash to disincentivize spam), and we use the fact
-that the L1 is enforcing signature checks to offload work to the L1 consensus network. So, rather than
-making an expensive signature check for each batch in zk, we use a much cheaper lookup to check if the
-user is a registered sequencer.
+Because Sovereign SDK chains are designed to operate over a "lazy" ledger which contains invalid transactions, they don't inherit this property by default. To compensate, the Sovereign SDK uses a simple trick: we force sequencers to register on the L2 chain by bonding some (L2) tokens _and_ claiming ownerships of an L1 address. Using this trick, we can offload the sequencer signature checks to the L1. At the rollup level, we only process batches that have been sent by bonded sequencers (who we can slash to disincentivize spam), and we use the fact that the L1 is enforcing signature checks to offload work to the L1 consensus network. So, rather than
+making an expensive signature check for each batch in zk, we use a much cheaper lookup to check if the user is a registered sequencer.
 
 ### Censorship Resistance
 
-Censorship resistance is the whole point. If your rollup doesn't have it, it's not an L2, just a sparkling database.
-But, a rollup can't provide censorship resistance on its own - after all, the underlying L1 could always censor
-bundles containing unpopular transactions. So, the L1 needs to be censorship resistant.
+Censorship resistance is the whole point. If your rollup doesn't have it, it's not an L2, just a sparkling database. But, a rollup can't provide censorship resistance on its own - after all, the underlying L1 could always censor bundles containing unpopular transactions. So, the L1 needs to be censorship resistant.
 
 ### Total Ordering
 
-We allow Sovereign SDK chains to specify any state model of their choosing. So, the underlying DA layer must
-provide a total ordering over rollup batches. For purposes of bridging, it also needs
-to provide an ordering _across_ batches on different rollups. (This is only an issue if the underlying
-chain uses a DAG model). This requirement may be relaxed in the future.
+We allow Sovereign SDK chains to specify any state model of their choosing. So, the underlying DA layer must provide a total ordering over rollup batches. For purposes of bridging, it also needs to provide an ordering _across_ batches on different rollups. (This is only an issue if the underlying chain uses a DAG model). This requirement may be relaxed in the future.
 
 ## Optional Functionality
 
 TODO: 2-way trust-minimized bridge with rollup
 
-# Required Interfaces
+## Required Interfaces
 
 ## DaSpec
 
-This interface defines the types shared between the `DaService` and `DaVerifier` traits. It has no associated
-functions.
+This interface defines the types shared between the `DaService` and `DaVerifier` traits. It has no associated functions.
 
 ### Type: `BlobTransaction`
 
 | Name     | Type      | Description                                                            |
 | -------- | --------- | ---------------------------------------------------------------------- |
 | `sender` | `Address` | The address which sent this transaction                                |
-| `data`   | `bytes`   | Data intended for rollup. Can be a proof, a transaction list, and etc. |
+| `data`   | `bytes`   | Data intended for rollup. Can be a proof, a transaction list, etc. |
 
 ### Type: `InclusionMultiproof`
 
-A proof showing that each item in an associated vector is included in some state commitment. For example,
-this could be a list of merkle siblings.
+A proof showing that each item in an associated vector is included in some state commitment. For example, this could be a list of merkle siblings.
 
 ### Type: `CompletenessProof`
 
-A proof showing that an associated vector does not omit any "relevant" transactions. For example, this could be a
-merkle proof of the items immediately preceding and following a particular Celestia namespace. This type may be
-the unit struct if no completeness proof is required.
+A proof showing that an associated vector does not omit any "relevant" transactions. For example, this could be a merkle proof of the items immediately preceding and following a particular Celestia namespace. This type may be the unit struct if no completeness proof is required.
 
 ### Type: `Blockheader`
 
@@ -116,21 +77,18 @@ Must include a `prev_hash` field. Must provide a function to compute its canonic
 
 ### Type: `SlotHash`
 
-The hash of a DA layer block. May be any type, but must provide access to a (canonical) byte string
-uniquely representing this hash.
+The hash of a DA layer block. Maybe any type, but must provide access to a (canonical) byte string uniquely representing this hash.
 
 | Name    | Type    | Description               |
 | ------- | ------- | ------------------------- |
 | `inner` | `bytes` | The raw bytes of the hash |
 
 **Code**
-
 Expressed in Rust, the DA Spec interface is a `trait`. You can find the trait implementation [here](../../src/state_machine/da.rs).
 
 ## DaVerifier
 
-The DaVerifier trait is part the rollup's state machine - meaning that it has to be proven in zk. Its job is to ensure that
-the DA layer's consensus translates into rollup state.
+The DaVerifier trait is part the rollup's state machine - meaning that it has to be proven in zk. Its job is to ensure that the DA layer's consensus translates into rollup state.
 
 ### Method:`verify_relevant_tx_list`
 
@@ -163,7 +121,6 @@ the DA layer's consensus translates into rollup state.
 - Note: This response is a `Result` type - only one of Ok or Err will be populated
 
 **Code**
-
 Expressed in Rust, the DA Verifier interface is a `trait`. You can find the trait implementation [here](../../src/state_machine/da.rs).
 
 ## DaService
@@ -277,14 +234,11 @@ in-circuit. For this reason, implementers are encouraged to prioritize readabili
 
 ### Type: `RuntimeConfig`
 
-A struct containing whatever runtime configuration is necessary to initialize this `DaService`. For example, this
-struct could contain the IP address and port of the remote RPC node that this `DaService` should connect to.
+A struct containing whatever runtime configuration is necessary to initialize this `DaService`. For example, this struct could contain the IP address and port of the remote RPC node that this `DaService` should connect to.
 
 ### Type: `FilteredBlock`
 
-The relevant subset of data from the DA layer block. This type must contain all data which will be processed by the rollup
-and enough auxiliary data to allow its block hash to be recomputed by the `DaVerifier`.
+The relevant subset of data from the DA layer block. This type must contain all data which will be processed by the rollup and enough auxiliary data to allow its block hash to be recomputed by the `DaVerifier`.
 
 **Code**
-
 Expressed in Rust, the DA Verifier interface is a `trait`. You can find the trait implementation [here](../../src/node/services/da.rs).

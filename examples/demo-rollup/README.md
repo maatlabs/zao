@@ -1,13 +1,5 @@
 # Demo Rollup ![Time - ~5 mins](https://img.shields.io/badge/Time-~5_mins-informational)
 
-<p align="center">
-  <img width="50%" src="../../assets/discord-banner.png">
-  <br>
-  <i>Stuck, facing problems, or unsure about something?</i>
-  <br>
-  <i>Join our <a href="https://discord.gg/kbykCcPrcA">Discord</a> and ask your questions in <code>#support</code>!</i>
-</p>
-
 #### Table of Contents
 
 <!-- https://github.com/thlorenz/doctoc -->
@@ -41,58 +33,58 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## What is This?
-This demo shows how to integrate a State Transition Function (STF) with a Data Availability (DA) layer and a zkVM to create a full
-zk-rollup. The code in this repository corresponds to running a full-node of the rollup, which executes
-every transaction. 
 
-By swapping out or modifying the imported state transition function, you can customize
-this example full-node to run arbitrary logic.
-This particular example relies on the state transition exported by [`demo-stf`](../demo-rollup/stf/). If you want to
-understand how to build your own state transition function, check out at the docs in that package.
+This demo shows how to integrate a State Transition Function (STF) with a Data Availability (DA) layer and a zkVM to create a full
+zk-rollup. The code in this repository corresponds to running a full-node of the rollup, which executes every transaction.
+
+By swapping out or modifying the imported state transition function, you can customize this example full-node to run arbitrary logic.
+This particular example relies on the state transition exported by [`demo-stf`](../demo-rollup/stf/). If you want to understand how to build your own state transition function, check out at the docs in that package.
 
 ## Getting Started
-If you are looking for a simple rollup with minimal dependencies as a starting point, please have a look here: 
-[sov-rollup-starter](https://github.com/Sovereign-Labs/sov-rollup-starter/)
 
+If you are looking for a simple rollup with minimal dependencies as a starting point, please have a look here: [sov-rollup-starter](https://github.com/Sovereign-Labs/sov-rollup-starter/)
 
 ### Run a local DA layer instance
+
 This setup works with an in-memory DA that is easy to set up for testing purposes.
 
 ### Start the Rollup Full Node
+
 1. Switch to the `examples/demo-rollup` and compile the application:
 
 ```shell,test-ci
-$ cd examples/demo-rollup/
-$ cargo build --bins
+cd examples/demo-rollup/
+cargo build --bins
 ```
 
-2. Clean up the existing database.
-Makefile to simplify that process:
+2. Clean up the existing database. Makefile to simplify that process:
+
 ```sh,test-ci
-$ make clean-mock-rollup-db
+make clean-mock-rollup-db
 ```
 
-3. Now run the demo-rollup full node, as shown below. 
+3. Now run the demo-rollup full node, as shown below.
+
 ```sh,test-ci,bashtestmd:long-running
-$ cargo run
+cargo run
 ```
+
 Leave it running while you proceed with the rest of the demo.
 
-
 ### Sanity Check: Creating a Token
+
 After switching to a new terminal tab, let's submit our first transaction by creating a token:
 
 ```sh,test-ci
-$ make test-create-token
+make test-create-token
 ```
 
 ### How to Submit Transactions
-The `make test-create-token` command above was useful to test if everything is running correctly. Now let's get a better understanding of how to create and submit a transaction
 
-### How to Submit Transactions
 The `make test-create-token` command above was useful to test if everything is running correctly. Now let's get a better understanding of how to create and submit a transaction.
 
 #### 1. Build `sov-cli`
+
 You'll need the `sov-cli` binary in order to create transactions. Build it with these commands:
 
 ```bash,test-ci,bashtestmd:compare-output
@@ -221,10 +213,13 @@ Options:
 
 Let's go ahead and import the transaction into the wallet
 
-
 ```bash,test-ci,bashtestmd:compare-output
-$ cargo run --bin sov-cli -- transactions import from-file bank --chain-id 0 --path ../test-data/requests/transfer.json
+cargo run --bin sov-cli -- transactions import from-file bank --chain-id 0 --path ../test-data/requests/transfer.json
+```
+
 Adding the following transaction to batch:
+
+```json
 {
   "tx": {
     "bank": {
@@ -244,14 +239,15 @@ Adding the following transaction to batch:
 ```
 
 #### Submit the Transaction(s)
-You now have a batch with a single transaction in your wallet. If you want to submit any more transactions as part of this
-batch, you can import them now. Finally, let's submit your transaction to the rollup.
+
+You now have a batch with a single transaction in your wallet. If you want to submit any more transactions as part of this batch, you can import them now. Finally, let's submit your transaction to the rollup.
 
 ```bash,test-ci
-$ cargo run --bin sov-cli rpc submit-batch by-address sov1l6n2cku82yfqld30lanm2nfw43n2auc8clw7r5u5m6s7p8jrm4zqrr8r94
+cargo run --bin sov-cli rpc submit-batch by-address sov1l6n2cku82yfqld30lanm2nfw43n2auc8clw7r5u5m6s7p8jrm4zqrr8r94
 ```
 
 #### Verify the Token Supply
+
 ```bash,test-ci,bashtestmd:compare-output
 $ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method":"bank_supplyOf","params":{"token_address":"sov1zdwj8thgev2u3yyrrlekmvtsz4av4tp3m7dm5mx5peejnesga27svq9m72"},"id":1}' http://127.0.0.1:12345
 {"jsonrpc":"2.0","result":{"amount":1000},"id":1}
@@ -265,34 +261,26 @@ $ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method"
 
 ## Interacting with your Node via RPC
 
-By default, this implementation prints the state root and the number of blobs processed for each slot. To access any other data, you'll
-want to use our RPC server. You can configure its host and port in `rollup_config.toml`.
+By default, this implementation prints the state root and the number of blobs processed for each slot. To access any other data, you'll want to use our RPC server. You can configure its host and port in `rollup_config.toml`.
 
 ### Key Concepts
 
 **Query Modes**
-
 Most queries for ledger information accept an optional `QueryMode` argument. There are three QueryModes:
 
-- `Standard`. In Standard mode, a response to a query for an outer struct will contain the full outer struct and hashes of inner structs. For example
-  a standard `ledger_getSlots` query would return all information relating to the requested slot, but only the hashes of the batches contained therein.
-  If no `QueryMode` is specified, a `Standard` response will be returned
+- `Standard`. In Standard mode, a response to a query for an outer struct will contain the full outer struct and hashes of inner structs. For example, a standard `ledger_getSlots` query would return all information relating to the requested slot, but only the hashes of the batches contained therein. If no `QueryMode` is specified, a `Standard` response will be returned.
 - `Compact`. In Compact mode, even the hashes of child structs are omitted.
-- `Full`. In Full mode, child structs are recursively expanded. So, for example, a query for a slot would return the slot's data, as well as data relating
-  to any `batches` that occurred in that slot, any transactions in those batches, and any events that were emitted by those transactions.
+- `Full`. In Full mode, child structs are recursively expanded. So, for example, a query for a slot would return the slot's data, as well as data relating to any `batches` that occurred in that slot, any transactions in those batches, and any events that were emitted by those transactions.
 
 **Identifiers**
-
 There are several ways to uniquely identify items in the Ledger DB.
 
-- By _number_. Each family of structs (`slots`, `blocks`, `transactions`, and `events`) is numbered in order starting from `1`. So, for example, the
-  first transaction to appear on the DA layer will be numered `1` and might emit events `1`-`5`. Or, slot `17` might contain batches `41` - `44`.
+- By _number_. Each family of structs (`slots`, `blocks`, `transactions`, and `events`) is numbered in order starting from `1`. So, for example, the first transaction to appear on the DA layer will be numbered `1` and might emit events `1`-`5`. Or, slot `17` might contain batches `41` - `44`.
 - By _hash_. (`slots`, `blocks`, and `transactions` only)
 - By _containing item_id and offset_.
 - (`Events` only) By _transaction_id and key_.
 
-To request an item from the ledger DB, you can provide any identifier - and even mix and match different identifiers. We recommend using item number
-wherever possible, though, since resolving other identifiers may require additional database lookups.
+To request an item from the ledger DB, you can provide any identifier - and even mix and match different identifiers. We recommend using item number wherever possible, though, since resolving other identifiers may require additional database lookups.
 
 Some examples will make this clearer. Suppose that slot number `5` contains batches `9`, `10`, and `11`, that batch `10` contains
 transactions `50`-`81`, and that transaction `52` emits event number `17`. If we want to fetch events number `17`, we can use any of the following queries:
@@ -316,13 +304,11 @@ $ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method"
 {"jsonrpc":"2.0","result":{"number":22019,"hash":"0xe8daef0f58a558aea44632a420bb62318bff6c38bbc616ff849d0a4be0a69cd3","batch_range":{"start":2,"end":2}},"id":1}
 ```
 
-This response indicates that the most recent slot processed was number `22019`, its hash, and that it contained no batches (since the `start` and `end`
-of the `batch_range` overlap). It also indicates that the next available batch to occur will be numbered `2`.
+This response indicates that the most recent slot processed was number `22019`, its hash, and that it contained no batches (since the `start` and `end` of the `batch_range` overlap). It also indicates that the next available batch to occur will be numbered `2`.
 
 #### `ledger_getSlots`
 
-This method retrieves slot data. It takes two arguments, a list of `SlotIdentifier`s and an optional `QueryMode`. If no query mode is provided,
-this list of identifiers may be flattened: `"params":[[7]]` and `"params":[7]` are both acceptable, but `"params":[7, "Compact"]` is not.
+This method retrieves slot data. It takes two arguments, a list of `SlotIdentifier`s and an optional `QueryMode`. If no query mode is provided, this list of identifiers may be flattened: `"params":[[7]]` and `"params":[7]` are both acceptable, but `"params":[7, "Compact"]` is not.
 
 **Example Query:**
 
@@ -336,8 +322,7 @@ This response indicates that slot number `6` contained batch `1` and gives the
 
 #### `ledger_getBatches`
 
-This method retrieves slot data. It takes two arguments, a list of `BatchIdentifier`s and an optional `QueryMode`. If no query mode is provided,
-this list of identifiers may be flattened: `"params":[[7]]` and `"params":[7]` are both acceptable, but `"params":[7, "Compact"]` is not.
+This method retrieves slot data. It takes two arguments, a list of `BatchIdentifier`s and an optional `QueryMode`. If no query mode is provided, this list of identifiers may be flattened: `"params":[[7]]` and `"params":[7]` are both acceptable, but `"params":[7, "Compact"]` is not.
 
 **Example Query:**
 
@@ -349,8 +334,7 @@ $ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method"
 
 #### `ledger_getTransactions`
 
-This method retrieves transactions. It takes two arguments, a list of `TxIdentifiers`s and an optional `QueryMode`. If no query mode is provided,
-this list of identifiers may be flattened: `"params":[[7]]` and `"params":[7]` are both acceptable, but `"params":[7, "Compact"]` is not.
+This method retrieves transactions. It takes two arguments, a list of `TxIdentifiers`s and an optional `QueryMode`. If no query mode is provided, this list of identifiers may be flattened: `"params":[[7]]` and `"params":[7]` are both acceptable, but `"params":[7, "Compact"]` is not.
 
 **Example Query:**
 
@@ -377,13 +361,11 @@ $ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method"
 This response indicates that event `1` has not been emitted yet.
 
 ## Testing with specific DA layers
-Check [here](./README_CELESTIA.md) if you want to run with dockerized local Celestia instance.
 
+Check [here](./README_CELESTIA.md) if you want to run with dockerized local Celestia instance.
 
 ## License
 
 Licensed under the [Apache License, Version 2.0](../../LICENSE).
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in this repository by you, as defined in the Apache-2.0 license, shall be
-licensed as above, without any additional terms or conditions.
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in this repository by you, as defined in the Apache-2.0 license, shall be licensed as above, without any additional terms or conditions.

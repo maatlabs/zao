@@ -13,7 +13,7 @@ In the future, this crate aims to introduce additional abstractions, such as `St
 
 Here is a snippet showcasing part of the `StateValue` API:
 
-```Rust
+```rust
 impl StateValue<V> {
 
     /// Sets a value in the StateValue.
@@ -31,7 +31,7 @@ impl StateValue<V> {
 }
 ```
 
-Both `get` and `set `methods require a `WorkingSet` parameter, which acts as a wrapper around a `key-value` store with additional caching layers.
+Both `get` and `set` methods require a `WorkingSet` parameter, which acts as a wrapper around a `key-value` store with additional caching layers.
 
 Module developers can interact with the `WorkingSet`, `StateValue`, and `StateMap` without worrying about the inner workings of these components. Instead, they can treat them as black boxes that handle the storage and retrieval of data.
 
@@ -40,14 +40,13 @@ The above API is used in the following way:
 ```rust
 state.value.set(&some_value, working_set);
 let maybe_value = state.value.get(working_set);
-
 ```
 
 ## Low-level explanation
 
 It's important to note that an understanding of this section is not necessarily required for efficient usage of the `sov-state`.
 
-### `Native` & `Zkp` execution:
+### `Native` & `Zkp` execution
 
 During `Native` execution, the data is stored in a `key-value` store, which is accessed through the `WorkingSet`. It's worth mentioning that the actual storage mechanism, such as `RocksDB`, is only accessible during this phase when the full node executes the transaction and updates the state.
 
@@ -55,7 +54,7 @@ In contrast, during the `Zkp` phase, when a cryptographic proof of correct execu
 
 The `Storage` abstraction is defined as follows:
 
-```Rust
+```rust
 pub trait Storage: Clone {
     type Witness: Witness;
     /// The runtime config for this storage instance.
@@ -78,6 +77,6 @@ pub trait Storage: Clone {
 
 The `sov-state` crate provides two implementations of the Storage trait: `ZkStorage` and `ProverStorage`. These implementations handle the storage and retrieval of data within the context of the `Zkp` and `Native` execution modes, respectively. (To improve performance when zk-proof generation is not a concern, an additional implementation can be added that excludes the generation of the witness). These implementations encapsulate the required logic and interactions with the storage system, allowing module developers to work with a consistent interface regardless of the execution mode.
 
-### `WorkingSet`:
+### `WorkingSet`
 
 Performing state updates and generating witnesses is a costly process. Thus, it is logical to incorporate caching layers to alleviate these issues. The `WorkingSet` writes data to the in-memory map and reads from the backing store only if the data is absent from the map. For more information about our cache, refer to the [`sov-first-read-last-write-cache`](../utils/sov-first-read-last-write-cache) crate. Furthermore, caches simplify the process of implementing state reverts. In the event that a specific transaction needs to be reverted, we can simply discard all the writes made to the relevant cache.

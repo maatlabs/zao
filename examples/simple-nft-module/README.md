@@ -2,34 +2,24 @@
 
 ### Understanding the Module System
 
-The Sovereign Software Development Kit (SDK) includes a [Module System](../../module-system/README.md),
-which serves as a catalog of concrete and opinionated implementations for the rollup interface.
-These modules are the fundamental building blocks of a rollup and include:
+The Sovereign Software Development Kit (SDK) includes a [Module System](../../module-system/README.md), which serves as a catalog of concrete and opinionated implementations for the rollup interface. These modules are the fundamental building blocks of a rollup and include:
 
-- **Protocol-level logic**: This includes elements such as account management, state management logic,
-  APIs for other modules, and macros for generating RPC. It provides the blueprint for your rollup.
-- **Application-level logic**: This is akin to smart contracts on Ethereum or pallets on Polkadot.
-  These modules often use state, modules-API, and macros modules to simplify their development and operation.
+- **Protocol-level logic**: This includes elements such as account management, state management logic, APIs for other modules, and macros for generating RPC. It provides the blueprint for your rollup.
+- **Application-level logic**: This is akin to smart contracts on Ethereum or pallets on Polkadot. These modules often use state, modules-API, and macros modules to simplify their development and operation.
 
 ### Creating a Non-Fungible Token (NFT) Module
 
-**Note**: This tutorial focuses on illustrating the usage of the Sovereign SDK by creating a simple NFT module.
-The focus here is on the module system and not the application logic. For a more complete NFT module, please refer
-to [sov-nft-module](../../module-system/module-implementations/sov-nft-module)
+**Note**: This tutorial focuses on illustrating the usage of the Sovereign SDK by creating a simple NFT module. The focus here is on the module system and not the application logic. For a more complete NFT module, please refer to [sov-nft-module](../../module-system/module-implementations/sov-nft-module)
 
-In this tutorial, we will focus on developing an application-level module. Users of this module will be able to mint
-unique tokens, transfer them to each other, or burn them. Users can also check the ownership of a particular token. For
-simplicity, each token represents only an ID and won't hold any metadata.
+In this tutorial, we will focus on developing an application-level module. Users of this module will be able to mint unique tokens, transfer them to each other, or burn them. Users can also check the ownership of a particular token. For simplicity, each token represents only an ID and won't hold any metadata.
 
 ## Getting Started
 
 ### Structure and dependencies
 
-The Sovereign SDK provides a [module-template](../../module-system/module-implementations/module-template/README.md),
-which is boilerplate that can be customized to easily build modules.
+The SDK provides a [module-template](../../module-system/module-implementations/module-template/README.md), which is boilerplate that can be customized to easily build modules.
 
 ```text
-
 ├── Cargo.toml
 ├── README.md
 └── src
@@ -45,13 +35,12 @@ Here are defining basic dependencies in `Cargo.toml` that module needs to get st
 ```toml
 [dependencies]
 anyhow = { anyhow = "1.0.62" }
-sov-modules-api = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", branch = "stable", features = ["macros"] }
+sov-modules-api = { git = "https://github.com/maatlabs/zao.git", branch = "main", features = ["macros"] }
 ```
 
 ### Establishing the Root Module Structure
 
-A module is a distinct crate that implements the `sov_modules_api::Module` trait. Each module
-has private state, which it updates in response to input messages.
+A module is a distinct crate that implements the `sov_modules_api::Module` trait. Each module has private state, which it updates in response to input messages.
 
 ### Module definition
 
@@ -81,30 +70,20 @@ This module includes:
    - The module address is unique.
    - The private key that generates this address is unknown.
 2. **State attributes**: In this case, the state attributes are the admin's address and a map of token IDs to owner
-   addresses.
-   For simplicity, the token ID is an u64.
+   addresses. For simplicity, the token ID is an u64.
 3. **Optional module reference**: This is used if the module needs to refer to another module.
 
 ### State and Context
 
 #### State
 
-`#[state]` values declared in a module are not physically stored in the module. Instead, the module definition
-simply declares the _types_ of the values that it will access. The values themselves live in a special struct
-called a `WorkingSet`, which abstracts away the implementation details of storage. In the default implementation, the actual state values live in a [Jellyfish Merkle Tree](https://github.com/penumbra-zone/jmt) (JMT).
-This separation between functionality (defined by the `Module`) and state (provided by the `WorkingSet`) explains
-why so many module methods take a `WorkingSet` as an argument.
+`#[state]` values declared in a module are not physically stored in the module. Instead, the module definition simply declares the _types_ of the values that it will access. The values themselves live in a special struct called a `WorkingSet`, which abstracts away the implementation details of storage. In the default implementation, the actual state values live in a [Jellyfish Merkle Tree](https://github.com/penumbra-zone/jmt) (JMT). This separation between functionality (defined by the `Module`) and state (provided by the `WorkingSet`) explains why so many module methods take a `WorkingSet` as an argument.
 
 #### Context
 
-The `Context` trait allows the runtime to pass verified data to modules during execution.
-Currently, the only required method in Context is sender(), which returns the address of the individual who initiated
-the transaction (the signer).
+The `Context` trait allows the runtime to pass verified data to modules during execution. Currently, the only required method in Context is sender(), which returns the address of the individual who initiated the transaction (the signer).
 
-Context also inherits the Spec trait, which defines the concrete types used by the rollup for Hashing, persistent data
-Storage, digital Signatures, and Addresses. The Spec trait allows rollups to easily tailor themselves to different ZK
-VMs. By being generic over a Spec, a rollup can ensure that any potentially SNARK-unfriendly cryptography can be easily
-swapped out.
+Context also inherits the Spec trait, which defines the concrete types used by the rollup for Hashing, persistent data Storage, digital Signatures, and Addresses. The Spec trait allows rollups to easily tailor themselves to different ZK VMs. By being generic over a Spec, a rollup can ensure that any potentially SNARK-unfriendly cryptography can be easily swapped out.
 
 ## Implementing `sov_modules_api::Module` trait
 
@@ -112,7 +91,7 @@ swapped out.
 
 Before we start implementing the `Module` trait, there are several preparatory steps to take:
 
-1.  Define `native` feature in `Cargo.toml` and add additional dependencies:
+1. Define `native` feature in `Cargo.toml` and add additional dependencies:
 
     ```toml
     [dependencies]
@@ -121,8 +100,8 @@ Before we start implementing the `Module` trait, there are several preparatory s
     serde = { version = "1", features = ["derive"] }
     serde_json = "1"
 
-    sov-modules-api = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", branch = "stable", default-features = false, features = ["macros"] }
-    sov-state = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", branch = "stable", default-features = false }
+    sov-modules-api = { git = "https://github.com/maatlabs/zao.git", branch = "main", default-features = false, features = ["macros"] }
+    sov-state = { git = "https://github.com/maatlabs/zao.git", branch = "main", default-features = false }
 
     [features]
     default = ["native"]
@@ -130,12 +109,9 @@ Before we start implementing the `Module` trait, there are several preparatory s
     native = ["serde", "sov-state/native", "sov-modules-api/native"]
     ```
 
-    This step is necessary to optimize the module for execution in ZK mode, where none of the RPC-related logic is
-    needed.
-    Zero Knowledge mode uses a different serialization format, so serde is not needed.
-    The `sov-state` module maintains the same logic, so its `native` flag is only enabled in that case.
+    This step is necessary to optimize the module for execution in ZK mode, where none of the RPC-related logic is needed. Zero Knowledge mode uses a different serialization format, so serde is not needed. The `sov-state` module maintains the same logic, so its `native` flag is only enabled in that case.
 
-2.  Define `Call` messages, which are used to change the state of the module:
+2. Define `Call` messages, which are used to change the state of the module:
 
     ```rust
     // in call.rs
@@ -158,11 +134,9 @@ Before we start implementing the `Module` trait, there are several preparatory s
     }
     ```
 
-    As you can see, we derive the `borsh` serialization format for these messages. Unlike most serialization libraries,
-    `borsh` guarantees that all messages have a single "canonical" serialization, which makes it easy to reliably
-    hash and compare serialized messages.
+    As you can see, we derive the `borsh` serialization format for these messages. Unlike most serialization libraries, `borsh` guarantees that all messages have a single "canonical" serialization, which makes it easy to reliably hash and compare serialized messages.
 
-3.  Create a `Config` struct for the genesis configuration. In this case, the admin address and initial token distribution
+3. Create a `Config` struct for the genesis configuration. In this case, the admin address and initial token distribution
     are configurable:
 
     ```rust
@@ -206,10 +180,7 @@ impl<C: sov_modules_api::Context> Module for NonFungibleToken<C> {
 
 ### Initialization
 
-Initialization is performed by the `genesis` method,
-which takes a config argument specifying the initial state to configure.
-Since it modifies state, `genesis` also takes a working set as an argument.
-`Genesis` is called only once, during the rollup deployment.
+Initialization is performed by the `genesis` method, which takes a config argument specifying the initial state to configure. Since it modifies state, `genesis` also takes a working set as an argument. `Genesis` is called only once, during the rollup deployment.
 
 ```rust, ignore
 use sov_modules_api::WorkingSet;
@@ -344,8 +315,7 @@ impl<C: sov_modules_api::Context> sov_modules_api::Module for NonFungibleToken<C
 
 ### Enabling Queries
 
-We also want other modules to be able to query the owner of a token, so we add a public method for that.
-This method is only available to other modules: it is not currently exposed via RPC.
+We also want other modules to be able to query the owner of a token, so we add a public method for that. This method is only available to other modules: it is not currently exposed via RPC.
 
 ```rust, ignore
 use jsonrpsee::core::RpcResult;
@@ -376,16 +346,13 @@ impl<C: sov_modules_api::Context> NonFungibleToken<C> {
 
 ## Testing
 
-Integration tests are recommended to ensure that the module is implemented correctly. This helps confirm
-that all public APIs function as intended.
-
-Temporary storage is needed for testing, so we enable the `temp` feature of `sov-state` as a `dev-dependency`.
+Integration tests are recommended to ensure that the module is implemented correctly. This helps confirm that all public APIs function as intended. Temporary storage is needed for testing, so we enable the `temp` feature of `sov-state` as a `dev-dependency`.
 Implementation of SnapshotQuery is also needed, so `sov-prover-storage-manager` is also added.
 
-```toml,text
+```toml
 [dev-dependencies]
-sov-state = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", branch = "stable", features = ["temp"] }
-sov-prover-storage-manager = { git = "https://github.com/Sovereign-Labs/sovereign-sdk.git", branch = "stable" }
+sov-state = { git = "https://github.com/maatlabs/zao.git", branch = "main", features = ["temp"] }
+sov-prover-storage-manager = { git = "https://github.com/maatlabs/zao.git", branch = "main" }
 ```
 
 Here is some boilerplate for NFT module integration tests:

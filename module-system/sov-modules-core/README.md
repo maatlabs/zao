@@ -1,6 +1,6 @@
 # `sov-modules-core`
 
-The `sov-modules-core` crate provides essential traits for Module declaration, with `no-std` compatibilitiy.
+The `sov-modules-core` crate provides essential traits for Module declaration, with `no-std` compatibility.
 
 Here are the key traits defined by the crate:
 
@@ -8,14 +8,12 @@ Here are the key traits defined by the crate:
    developers need to implement. The author of a module must specify:
 
     - Configuration upon rollup deployment: This includes the `genesis()` method and the `Config` type, which determine
-      how the module is set up initially. Note that the initialization for logic for modules is identical to
-      the `Genesis` trait (described below). We blanket implement `Genesis`
-      for all `Module`s, but keep it as a separate trait since some other structs need to implement it as well.
+      how the module is set up initially. Note that the initialization for logic for modules is identical to the `Genesis` trait (described below). We blanket implement `Genesis` for all `Module`s, but keep it as a separate trait since some other structs need to implement it as well.
 
     - Interaction with user messages: The module must define the `call` method and the `CallMessage` type, which handle
       user messages. These messages typically result in changes to the module's state.
 
-    - Gas configuration: The module may use a `GasConfig` type, annotated by `#[gas]`, that will be loaded from the 
+    - Gas configuration: The module may use a `GasConfig` type, annotated by `#[gas]`, that will be loaded from the
       constants manifest configuration.
 
 1. The `ModuleInfo` trait: Provides additional information related to a module. This trait is automatically derived.

@@ -2,7 +2,7 @@
 
 The `sov-bank` module is responsible for managing tokens on the rollup.
 
-### The `sov-bank` module offers the following functionality:
+### The `sov-bank` module offers the following functionality
 
 Calls:
 

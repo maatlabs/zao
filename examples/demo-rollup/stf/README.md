@@ -16,33 +16,23 @@
 # Demo State Transition Function
 
 This package shows how you can combine modules to build a custom state transition function. We provide several module implementations
-for you, and if you want additional functionality you can find a tutorial on writing custom modules [here](../simple-nft-module/README.md).
+for you, and if you want additional functionality you can find a tutorial on writing custom modules [here](../../simple-nft-module/README.md).
 
-For purposes of this tutorial, the exact choices of modules don't matter at all - the steps to combine modules are identical
-no matter which ones you pick.
+For purposes of this tutorial, the exact choices of modules don't matter at all - the steps to combine modules are identical no matter which ones you pick.
 
 ## Overview
 
-To get a fully functional rollup, we recommend implementing the [State Transition Function
-interface](../../rollup-interface/specs/interfaces/stf.md) ("STF")  trait, which specifies your rollup's abstract logic. Second, there's
-a related struct called `State Transition Runner` ("STR") which tells a full node how to run your abstract STF on a concrete machine.
+To get a fully functional rollup, we recommend implementing the [State Transition Function interface](../../../rollup-interface/specs/interfaces/stf.md) ("STF") trait, which specifies your rollup's abstract logic. Second, there's a related struct called `State Transition Runner` ("STR") which tells a full node how to run your abstract STF on a concrete machine.
 
 ## Implementing State Transition _Function_
 
-As you recall, the Module System is primarily designed to help you implement the [State Transition Function
-interface](../../rollup-interface/specs/interfaces/stf.md).
+As you recall, the Module System is primarily designed to help you implement the [State Transition Function interface](../../../rollup-interface/specs/interfaces/stf.md).
 
-That interface is quite high-level - the only notion
-that it surfaces is that of a `blob` of rollup data. In the Module System, we work at a much lower level - with
-transactions signed by particular private keys. To fill the gap, there's a system called an `StfBlueprint`, which
-bridges between the two layers of abstraction.
+That interface is quite high-level - the only notion that it surfaces is that of a `blob` of rollup data. In the Module System, we work at a much lower level - with transactions signed by particular private keys. To fill the gap, there's a system called an `StfBlueprint`, which bridges between the two layers of abstraction.
 
-The reason the `StfBlueprint` is called a "blueprint" is that it's generic. It allows you, the developer, to pass in
-several parameters that specify its exact behavior. In order, these generics are:
+The reason the `StfBlueprint` is called a "blueprint" is that it's generic. It allows you, the developer, to pass in several parameters that specify its exact behavior. In order, these generics are:
 
-1. `Context`: a per-transaction struct containing the message's sender. This also provides specs for storage access, so we use different `Context`
-   implementations for Native and ZK execution. In ZK, we read values non-deterministically from hints and check them against a merkle tree, while in
-   native mode we just read values straight from disk.
+1. `Context`: a per-transaction struct containing the message's sender. This also provides specs for storage access, so we use different `Context` implementations for Native and ZK execution. In ZK, we read values non-deterministically from hints and check them against a merkle tree, while in native mode we just read values straight from disk.
 2. `Runtime`: a collection of modules which make up the rollup's public interface
 
 To implement your state transition function, you simply need to specify values for each of these fields.
@@ -51,8 +41,7 @@ In the remainder of this section, we'll walk you through implementing each of th
 
 ## Implementing Runtime: Pick Your Modules
 
-The final piece of the puzzle is your app's runtime. A runtime is just a list of modules - really, that's it! To add a new
-module to your app, just add an additional field to the runtime.
+The final piece of the puzzle is your app's runtime. A runtime is just a list of modules - really, that's it! To add a new module to your app, just add a field to the runtime.
 
 ```rust
 use sov_modules_api::{Genesis, DispatchCall, MessageCodec, Context};
@@ -84,16 +73,13 @@ pub struct MyRuntime<C: Context, Da: DaSpec> {
 }
 ```
 
-As you can see in the above snippet, we derive four macros on the runtime. The `Genesis` macro generates
-initialization code for each module which will get run at your rollup's genesis. The other three macros
-allow your runtime to dispatch transactions and queries, and tell it which serialization scheme to use.
-We recommend borsh, since it's both fast and safe for hashing.
+As you can see in the above snippet, we derive four macros on the runtime. The `Genesis` macro generates initialization code for each module which will get run at your rollup's genesis. The other three macros allow your runtime to dispatch transactions and queries, and tell it which serialization scheme to use. We recommend borsh, since it's both fast and safe for hashing.
 
-### Implementing Hooks for the Runtime:
+### Implementing Hooks for the Runtime
 
 The next step is to implement `Hooks` for `MyRuntime`. Hooks are abstractions that allow for the injection of custom logic into the transaction processing pipeline.
 
-There are two kind of hooks:
+There are two kinds of hooks:
 
 `TxHooks`, which has the following methods:
 
@@ -102,7 +88,7 @@ There are two kind of hooks:
 
 `ApplyBlobHooks`, which has the following methods:
 
-1. `begin_blob_hook `Invoked at the beginning of the `apply_blob` function, before the blob is deserialized into a group of transactions. This is a good time to ensure that the sequencer is properly bonded.
+1. `begin_blob_hook`Invoked at the beginning of the `apply_blob` function, before the blob is deserialized into a group of transactions. This is a good time to ensure that the sequencer is properly bonded.
 2. `end_blob_hook` invoked at the end of the `apply_blob` function. This is a good place to reward sequencers.
 
 To use the `StfBlueprint`, the runtime needs to provide implementation of these hooks which specifies what needs to happen at each of these four stages.
@@ -158,24 +144,17 @@ impl<C: Context> ApplyBlobHooks for Runtime<C> {
 }
 ```
 
-That's it - with those three structs implemented, you can plug them into your `StfBlueprint` and get a
-complete State Transition Function!
+That's it - with those three structs implemented, you can plug them into your `StfBlueprint` and get a complete State Transition Function!
 
 ### Exposing RPC
 
-Your modules implement rpc methods via the `rpc_gen` macro, in order to enable the full-node to expose them, annotate the `Runtime` with `expose_rpc`.
-In the example above, you can see how to use the `expose_rpc` macro on the `native` `Runtime`.
+Your modules implement rpc methods via the `rpc_gen` macro, in order to enable the full-node to expose them, annotate the `Runtime` with `expose_rpc`. In the example above, you can see how to use the `expose_rpc` macro on the `native` `Runtime`.
 
-## Make Full Node Integrations Simpler with the State Transition Runner:
+## Make Full Node Integrations Simpler with the State Transition Runner
 
-Now that we have an app, we want to be able to run it. For any custom state transition, your full node implementation is going to need a little
-customization. At the very least, you'll have to modify our `demo-rollup` example code
-to import your custom STF! But, when you're building an STF it's useful to stick as closely as possible to some standard interfaces.
-That way, you can minimize the changeset for your custom node implementation, which reduces the risk of bugs.
+Now that we have an app, we want to be able to run it. For any custom state transition, your full node implementation is going to need a little customization. At the very least, you'll have to modify our `demo-rollup` example code to import your custom STF! But, when you're building an STF it's useful to stick as closely as possible to some standard interfaces. That way, you can minimize the change set for your custom node implementation, which reduces the risk of bugs.
 
-To help you integrate with full node implementations, we provide standard tools for initializing an app (`StateTransitionRunner`). In this section, we'll briefly show how to use them. Again it is not strictly
-required - just by implementing STF, you get the capability to integrate with DA layers and zkVMs. But, using these structures
-makes you more compatible with full node implementations out of the box.
+To help you integrate with full node implementations, we provide standard tools for initializing an app (`StateTransitionRunner`). In this section, we'll briefly show how to use them. Again it is not strictly required - just by implementing STF, you get the capability to integrate with DA layers and zkVMs. But, using these structures makes you more compatible with full node implementations out of the box.
 
 ### Using State Transition Runner
 
@@ -185,9 +164,6 @@ The State Transition Runner struct contains logic related to initialization and 
 2. `run` - which runs the rollup.
 3. `start_rpc_server` - which exposes an RPC server.
 
-
 ## Wrapping Up
 
-Whew, that was a lot of information. To recap, implementing your own state transition function is as simple as plugging  
-a Runtime, a Transaction Verifier, and some Transaction Hooks into the pre-built app blueprint. Once you've done that,
-you can integrate with any DA layer and zkVM to create a Sovereign Rollup.
+Whew, that was a lot of information. To recap, implementing your own state transition function is as simple as plugging a Runtime, a Transaction Verifier, and some Transaction Hooks into the pre-built app blueprint. Once you've done that, you can integrate with any DA layer and zkVM to create a Sovereign Rollup.

@@ -10,7 +10,7 @@ This document describes how to cut a release of the Sovereign SDK.
 - [Releases](#releases)
   - [Before starting](#before-starting)
   - [Pick a version number](#pick-a-version-number)
-  - [Make sure the documentation and tutorials are up to date](#make-sure-the-documentation-and-tutorials-are-up-to-date)
+  - [Make sure the documentation and tutorials are up-to-date](#make-sure-the-documentation-and-tutorials-are-up-to-date)
   - [Update all crate versions](#update-all-crate-versions)
   - [Prepare the PR](#prepare-the-pr)
   - [Release to `crates.io`](#release-to-cratesio)
@@ -21,7 +21,7 @@ This document describes how to cut a release of the Sovereign SDK.
 
 ## Before starting
 
-Before starting, ensure your local copy of the repository is up to date with the latest commit on `nightly` and has no untracked or uncommitted changes. Making a fresh clone of the repository is a good way to ensure this.
+Before starting, ensure your local copy of the repository is up-to-date with the latest commit on `nightly` and has no untracked or uncommitted changes. Making a fresh clone of the repository is a good way to ensure this.
 
 ## Pick a version number
 
@@ -30,11 +30,12 @@ Before starting, ensure your local copy of the repository is up to date with the
   - [ ] Don't forget the `v`!
 - [ ] Create a new local branch named `release/{version}` (e.g. `release/v0.2.0-alpha`) from `nightly`.
 
-## Make sure the documentation and tutorials are up to date
-- [ ] Audit the getting-started documentation and ensure there's no breakages:
+## Make sure the documentation and tutorials are up-to-date
+
+- [ ] Audit the getting-started documentation and ensure there are no breakages:
   - [ ] Manually run the steps from `examples/demo-rollup/README.md`.
   - [ ] Manually run the steps from `examples/demo-prover/README.md`.
-- [ ] Review all the other tutorials and ensure explanations are up to date:
+- [ ] Review all the other tutorials and ensure explanations are up-to-date:
   - [ ] `examples/demo-nft-module/README.md`
   - [ ] `examples/demo-simple-stf/README.md`
   - [ ] `examples/demo-rollup/stf/README.md`
@@ -52,8 +53,8 @@ For each and every crate in this repository, you'll need to do three things:
 
 The `cargo set-version` subcommand supplied by [`cargo-edit`](https://github.com/killercup/cargo-edit) does all of this for you automatically. Invoke it like this:
 
-```
-$ cargo set-version 0.2.0  # From the root of the repository
+```bash
+cargo set-version 0.2.0  # From the root of the repository
 ```
 
 Note that `cargo set-version` only acts **within** the current workspace, so you'll have to **run it once for every workspace** in the repository. You can find all workspaces by searching for `[workspace]`.

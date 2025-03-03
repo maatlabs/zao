@@ -1,20 +1,12 @@
 # Module System
 
-This directory contains an opinionated framework for building rollups with the Sovereign SDK. It aims to provide a
-"batteries included" development experience. Using the Module System still allows you to customize key components of your rollup
-like its hash function and signature scheme, but it also forces you to rely on some reasonable default values for things like
-serialization schemes (Borsh), address formats (bech32), etc.
+This directory contains an opinionated framework for building rollups with the Sovereign SDK. It aims to provide a "batteries included" development experience. Using the Module System still allows you to customize key components of your rollup like its hash function and signature scheme, but it also forces you to rely on some reasonable default values for things like serialization schemes (Borsh), address formats (bech32), etc.
 
-By developing with the Module System, you get access to a suite of pre-built modules supporting common functions like generating accounts,
-minting and transferring tokens, and incentivizing sequencers. You also get access to powerful tools for generating RPC implementations,
-and a powerful templating system for implementing complex state transitions.
+By developing with the Module System, you get access to a suite of pre-built modules supporting common functions like generating accounts, minting and transferring tokens, and incentivizing sequencers. You also get access to powerful tools for generating RPC implementations, and a powerful templating system for implementing complex state transitions.
 
 ## Modules: The Basic Building Block
 
-The basic building block of the Module System is a `module`. Modules are structs in Rust, and are _required_ to implement the `Module` trait.
-You can find a complete tutorial showing how to implement a custom module [here](../examples/simple-nft-module/README.md).
-Modules typically live in their own crates (you can find a template [here](./module-implementations/module-template/)) so that they're easily
-re-usable. A typical struct definition for a module looks something like this:
+The basic building block of the Module System is a `module`. Modules are structs in Rust, and are _required_ to implement the `Module` trait. You can find a complete tutorial showing how to implement a custom module [here](../examples/simple-nft-module/README.md). Modules typically live in their own crates (you can find a template [here](./module-implementations/module-template/)) so that they're easily re-usable. A typical struct definition for a module looks something like this:
 
 ```rust
 #[derive(ModuleInfo)]
@@ -29,20 +21,12 @@ pub struct Bank<C: sov_modules_api::Context> {
 }
 ```
 
-At first glance, this definition might seem a little bit intimidating because of the generic `C`.
-Don't worry, we'll explain that generic in detail later.
-For now, just notice that a module is a struct with an address and some `#[state]` fields specifying
-what kind of data this module has access to. Under the hood, the `ModuleInfo` derive macro will do some magic to ensure that
-any `#[state]` fields get mapped onto unique storage keys so that only this particular module can read or write its state values.
+At first glance, this definition might seem a little intimidating because of the generic `C`. Don't worry, we'll explain that generic in detail later. For now, just notice that a module is a struct with an address and some `#[state]` fields specifying what kind of data this module has access to. Under the hood, the `ModuleInfo` derive macro will do some magic to ensure that any `#[state]` fields get mapped onto unique storage keys so that only this particular module can read or write its state values.
 
 At this stage, it's also very important to note that the state values are external to the module. This struct definition defines the
-_shape_ of the values that will be stored, but the values themselves don't live inside the module struct. In other words, a module doesn't
-secretly have a reference to some underlying database. Instead a module defines the _logic_ used to access state values,
-and the values themselves live in a special struct called a `WorkingSet`.
+_shape_ of the values that will be stored, but the values themselves don't live inside the module struct. In other words, a module doesn't secretly have a reference to some underlying database. Instead, a module defines the _logic_ used to access state values, and the values themselves live in a special struct called a `WorkingSet`.
 
-This has several consequences. First, it means that modules are always cheap to clone. Second it means that calling `my_module.clone()`
-always yields the same result as calling `MyModule::new()`. Finally, it means that every method of the module which reads or
-modifies state needs to take a `WorkingSet` as an argument.
+This has several consequences. First, it means that modules are always cheap to clone. Second it means that calling `my_module.clone()` always yields the same result as calling `MyModule::new()`. Finally, it means that every method of the module which reads or modifies state needs to take a `WorkingSet` as an argument.
 
 ### Gas configuration
 
@@ -62,7 +46,7 @@ Here is an example `constants.json` file:
 }
 ```
 
-The `ModuleInfo` macro will look for a `gas` field inside the JSON, that must be an object, and will look for the name of the module inside of the `gas` object. If present, it will parse that object as gas configuration; otherwise, it will parse the `gas` object directly. On the example above, it will attempt to parse a structure that looks like this:
+The `ModuleInfo` macro will look for a `gas` field inside the JSON, that must be an object, and will look for the name of the module inside the `gas` object. If present, it will parse that object as gas configuration; otherwise, it will parse the `gas` object directly. On the example above, it will attempt to parse a structure that looks like this:
 
 ```rust
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -75,7 +59,7 @@ pub struct BankGasConfig<GU: GasUnit> {
 }
 ```
 
-The `GasUnit` generic type will be defined by the runtime `Context`. For `DefaultContext`, we use `TupleGasUnit<2>` - that is, a gas unit with a two dimensions. The same setup is defined for `ZkDefaultContext`. Here is an example of a `constants.json` file, specific to the `Bank` module:
+The `GasUnit` generic type will be defined by the runtime `Context`. For `DefaultContext`, we use `TupleGasUnit<2>` - that is, a gas unit with two dimensions. The same setup is defined for `ZkDefaultContext`. Here is an example of a `constants.json` file, specific to the `Bank` module:
 
 ```json
 {
@@ -92,7 +76,7 @@ The `GasUnit` generic type will be defined by the runtime `Context`. For `Defaul
 }
 ```
 
-As you can see above, the fields can be either array, numeric, or boolean. If boolean, it will be converted to either `0` or `1`. If array, each element is expected to be either a numeric or boolean. The example above will create a gas unit of two dimensions. If the `Context` requires less dimensions than available, it will pick the first ones of relevance, and ignore the rest. That is: with a `Context` of one dimension, , the effective config will be expanded to:
+As you can see above, the fields can be either array, numeric, or boolean. If boolean, it will be converted to either `0` or `1`. If arrayed, each element is expected to be either a numeric or boolean. The example above will create a gas unit of two dimensions. If the `Context` requires fewer dimensions than available, it will pick the first ones of relevance, and ignore the rest. That is: with a `Context` of one dimension, the effective config will be expanded to:
 
 ```rust
 BankGasConfig {
@@ -123,6 +107,8 @@ fn call(
         } => {
             self.charge_gas(working_set, &self.gas.create_token)?;
             // Implementation elided...
+        }
+    }
 }
 ```
 
@@ -151,8 +137,7 @@ pub struct Bank<C: sov_modules_api::Context> {
 
 ### Public Functions: The Module-to-Module Interface
 
-The first interface that modules expose is defined by the public methods from the rollup's `impl`. These methods are
-accessible to other modules, but cannot be directly invoked by other users. A good example of this is the `bank.transfer_from` method:
+The first interface that modules expose is defined by the public methods from the rollup's `impl`. These methods are accessible to other modules, but cannot be directly invoked by other users. A good example of this is the `bank.transfer_from` method:
 
 ```rust
 impl<C: Context> Bank<C> {
@@ -163,13 +148,9 @@ impl<C: Context> Bank<C> {
 ```
 
 This function transfers coins from one address to another _without a signature check_. If it was exposed to users, it would allow
-for the theft of funds. But it's very useful for modules to be able to initiate funds transfers without access to users' private keys. (Of course, modules should be careful to get the user's consent before transferring funds. By
-using the transfer_from interface, a module is declaring that it has gotten such consent.)
+for the theft of funds. But it's very useful for modules to be able to initiate funds transfers without access to users' private keys. (Of course, modules should be careful to get the user's consent before transferring funds. By using the transfer_from interface, a module is declaring that it has gotten such consent.)
 
-This leads us to a very important point about the Module System. All modules are _trusted_. Unlike smart contracts on Ethereum, modules
-cannot be dynamically deployed by users - they're fixed up-front by the rollup developer. That doesn't mean that the Sovereign SDK doesn't
-support smart contracts - just that they live one layer higher up the stack. If you want to deploy smart contracts on your rollup, you'll need
-to incorporate a _module_ which implements a secure virtual machine that users can invoke to store and run smart contracts.
+This leads us to a very important point about the Module System. All modules are _trusted_. Unlike smart contracts on Ethereum, modules cannot be dynamically deployed by users - they're fixed up-front by the rollup developer. That doesn't mean that the Sovereign SDK doesn't support smart contracts - just that they live one layer higher up the stack. If you want to deploy smart contracts on your rollup, you'll need to incorporate a _module_ which implements a secure virtual machine that users can invoke to store and run smart contracts.
 
 ### The `Call` Function: The Module-to-User Interface
 
@@ -179,7 +160,7 @@ tells the `call` function which inner method of the module to invoke. So a typic
 
 ```rust
 impl<C: sov_modules_api::Context> sov_modules_api::Module for Bank<C> {
-	// Several definitions elided here ...
+ // Several definitions elided here ...
     fn call(&self, msg: Self::CallMessage, context: &Self::Context, working_set: &mut WorkingSet<C>) {
         match msg {
             CallMessage::CreateToken {
@@ -195,7 +176,7 @@ impl<C: sov_modules_api::Context> sov_modules_api::Module for Bank<C> {
 
 ### The `RPC` Macro: The Node-to-User Interface
 
-The third interface that modules expose is an rpc implementation. To generate an RPC implementation, simply annotate your `impl` block
+The third interface that modules expose is an RPC implementation. To generate an RPC implementation, simply annotate your `impl` block
 with the `#[rpc_gen]` macro from `sov_modules_api::macros`.
 
 ```rust
@@ -228,17 +209,14 @@ This will generate a public trait in the bank crate called `BankRpcImpl`, which 
 
 For an example of how to instantiate the generated trait as a server bound to a specific port, see the [demo-rollup](../examples/demo-rollup/) package.
 
-**Note that only one impl block per module may be annotated with `rpc_gen`**, but that the block may contain as many `rpc_method` annotations as you want.
+**Note that only one `impl` block per module may be annotated with `rpc_gen`**, but that the block may contain as many `rpc_method` annotations as you want.
 
 For an end-to-end walkthrough showing how to implement an RPC server using the Module System, see [here](./RPC_WALKTHROUGH.md)
 
 ## Context and Spec: How to Make Your Module System Portable
 
 In addition to `Module`, there are two traits that are ubiquitous in the modules system - `Context` and `Spec`. To understand these
-two traits it's useful to remember that the high-level workflow of a Sovereign SDK rollup consists of two stages.
-First, transactions are executed in native code to generate a "witness". Then, the witness is fed to the zk-circuit,
-which re-executes the transactions in a (more expensive) zk environment to create a proof. So, pseudocode for the rollup
-workflow looks roughly like this:
+two traits it's useful to remember that the high-level workflow of a Sovereign SDK rollup consists of two stages. First, transactions are executed in native code to generate a "witness". Then, the witness is fed to the zk-circuit, which re-executes the transactions in a (more expensive) zk environment to create a proof. So, pseudocode for the rollup workflow looks roughly like this:
 
 ```rust
 use sov_modules_api::DefaultContext;
@@ -300,10 +278,7 @@ pub trait Context: Spec + Clone + Debug + PartialEq {
 }
 ```
 
-Modules are expected to be generic over the `Context` type. If a module is generic over multiple type parameters, then the type bound over `Context` is always on the *first* of those type parameters. The `Context` trait gives them a convenient handle to access all of the cryptographic operations
-defined by a `Spec`, while also making it easy for the Module System to pass in authenticated transaction-specific information which
-would not otherwise be available to a module. Currently, a `Context` is only required to contain the `sender` (signer) of the transaction,
-but this trait might be extended in the future.
+Modules are expected to be generic over the `Context` type. If a module is generic over multiple type parameters, then the type bound over `Context` is always on the _first_ of those type parameters. The `Context` trait gives them a convenient handle to access all the cryptographic operations defined by a `Spec`, while also making it easy for the Module System to pass in authenticated transaction-specific information which would not otherwise be available to a module. Currently, a `Context` is only required to contain the `sender` (signer) of the transaction, but this trait might be extended in the future.
 
 Putting it all together, recall that the Bank struct is defined like this.
 
@@ -317,26 +292,20 @@ pub struct Bank<C: sov_modules_api::Context> {
 }
 ```
 
-Notice that the generic type `C` is required to implement the `sov_modules_api::Context` trait. Thanks to that generic, the Bank struct can
-access the `Address` field from `Spec` - meaning that your bank logic doesn't change if you swap out your underlying address schema.
+Notice that the generic type `C` is required to implement the `sov_modules_api::Context` trait. Thanks to that generic, the Bank struct can access the `Address` field from `Spec` - meaning that your bank logic doesn't change if you swap out your underlying address schema.
 
 Similarly, since each of the banks helper functions is automatically generic over a context, it's easy to define logic which
-can abstract away the distinctions between `zk` and `native` execution. For example, when a rollup is running in native mode
-its `Storage` type will almost certainly be [`ProverStorage`](./sov-state/src/prover_storage.rs), which holds its data in a
-Merkle tree backed by RocksDB. But if you're running in zk mode the `Storage` type will instead be [`ZkStorage`](./sov-state/src/zk_storage.rs), which reads
-its data from a set of "hints" provided by the prover. Because all the rollups modules are generic, none of them need to worry
-about this distinction.
+can abstract away the distinctions between `zk` and `native` execution. For example, when a rollup is running in native mode its `Storage` type will almost certainly be [`ProverStorage`](./sov-state/src/prover_storage.rs), which holds its data in a Merkle tree backed by RocksDB. But if you're running in zk mode the `Storage` type will instead be [`ZkStorage`](./sov-state/src/zk_storage.rs), which reads its data from a set of "hints" provided by the prover. Because all the rollups modules are generic, none of them need to worry about this distinction.
 
 For more information on `Context` and `Spec`, and to see some example implementations, check out the [`sov_modules_api`](./sov-modules-api/) docs.
 
+### Module CallMessage and `schemars::JsonSchema`
 
-### Module CallMessage and `schemars::JsonSchema`.
 Like in the `bank` module the `CallMessage` can be parameterized by `C::Context`. To ensure a smooth wallet experience, we need the `CallMessage` to implement `schemars::JsonSchema` trait. However, simply adding `derive(schemars::JsonSchema)` to the `CallMessage` definition results in the following error:
 
-```
+```sh
 the trait JsonSchema is not implemented for C
 ```
-
 
 The reason for this issue is that the standard derive mechanism for `JsonSchema` cannot determine the correct trait bounds for the `Context`. To resolve this, we need to provide the following hint:
 
@@ -344,6 +313,4 @@ The reason for this issue is that the standard derive mechanism for `JsonSchema`
 schemars(bound = "C::Address: ::schemars::JsonSchema", rename = "CallMessage")
 ```
 
-Now, the `schemars::derive` understands that it is sufficient for only `C::Address` to implement `schemars::JsonSchema`
-
-If `CallMessage` in your module uses an associated type from `Context` you might need to provide a similar hint.
+Now, the `schemars::derive` understands that it is sufficient for only `C::Address` to implement `schemars::JsonSchema`. If `CallMessage` in your module uses an associated type from `Context` you might need to provide a similar hint.

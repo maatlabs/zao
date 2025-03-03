@@ -2,16 +2,7 @@
 
 This is a demo full node running a simple Sovereign SDK rollup on [Celestia](https://celestia.org/).
 
-<p align="center">
-  <img width="50%" src="../../assets/discord-banner.png">
-  <br>
-  <i>Stuck, facing problems, or unsure about something?</i>
-  <br>
-  <i>Join our <a href="https://discord.gg/kbykCcPrcA">Discord</a> and ask your questions in <code>#support</code>!</i>
-</p>
-
-You can follow the steps below to run the demo rollup on a local Celestia devnet instance. However, due to numerous users encountering failures because of basic local setup or Docker issues, we strongly suggest using the plain demo rollup with mock Data Availability (DA) for testing.
-We are developing more robust tooling to enable seamless deployment of rollups on any DA layer. Until this tooling is available, we will only support our early partners in deploying on devnets.
+You can follow the steps below to run the demo rollup on a local Celestia devnet instance. However, due to numerous users encountering failures because of basic local setup or Docker issues, we strongly suggest using the plain demo rollup with mock Data Availability (DA) for testing. We are developing more robust tooling to enable seamless deployment of rollups on any DA layer. Until this tooling is available, we will only support our early partners in deploying on devnets.
 
 #### Table of Contents
 
@@ -41,35 +32,31 @@ We are developing more robust tooling to enable seamless deployment of rollups o
 ## What is This?
 
 This demo shows how to integrate a State Transition Function (STF) with a Data Availability (DA) layer and a zkVM to create a full
-zk-rollup. The code in this repository corresponds to running a full-node of the rollup, which executes
-every transaction. 
+zk-rollup. The code in this repository corresponds to running a full-node of the rollup, which executes every transaction.
 
-By swapping out or modifying the imported state transition function, you can customize
-this example full-node to run arbitrary logic.
-This particular example relies on the state transition exported by [`demo-stf`](../demo-rollup/stf/). If you want to
-understand how to build your own state transition function, check out at the docs in that package.
+By swapping out or modifying the imported state transition function, you can customize this example full-node to run arbitrary logic.
+This particular example relies on the state transition exported by [`demo-stf`](../demo-rollup/stf/). If you want to understand how to build your own state transition function, check out at the docs in that package.
 
 ## Getting Started
-If you are looking for a simple rollup with minimal dependencies as a starting point, please have a look here: 
-[sov-rollup-starter](https://github.com/Sovereign-Labs/sov-rollup-starter/)
+
+If you are looking for a simple rollup with minimal dependencies as a starting point, please have a look here: [sov-rollup-starter](https://github.com/Sovereign-Labs/sov-rollup-starter/)
 
 ### Run a local DA layer instance
 
 1. Install Docker: <https://www.docker.com>.
 
-2. Follow [this guide](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic)
-to authorize yourself in github's container registry. (we use original celestia images which they publish in ghcr)
+2. Follow [this guide](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic) to authorize yourself in github's container registry. (we use original celestia images which they publish in ghcr)
 
-```shell
+```bash
 # this has to be ran only once, unless your token expires
 $ echo $MY_PERSONAL_GITHUB_TOKEN | docker login ghcr.io -u $MY_GITHUB_USERNAME --password-stdin
 ```
 
 3. Switch to the `examples/demo-rollup` directory (which is where this `README.md` is located!), and compile the application:
 
-```shell,test-ci
-$ cd examples/demo-rollup/
-$ cargo build --bins
+```bash,test-ci
+cd examples/demo-rollup/
+cargo build --bins
 ```
 
 4. Spin up a local Celestia instance as your DA layer. We've built a small Makefile to simplify that process:
@@ -80,14 +67,13 @@ $ make clean
 $ make start
 ```
 
-If interested, you can check out what the Makefile does [here](#Makefile).  
- The above command will also modify some configuration files:
+If interested, you can check out what the Makefile does [here](#makefile). The above command will also modify some configuration files:
 
 ```sh,test-ci
 $ git status
 ..
 ..
-	modified:   rollup_config.toml
+ modified:   rollup_config.toml
 ```
 
 ### Start the Rollup Full Node
@@ -115,7 +101,7 @@ Leave it running while you proceed with the rest of the demo.
 After switching to a new terminal tab, let's submit our first transaction by creating a token:
 
 ```sh,test-ci
-$ make test-create-token
+make test-create-token
 ```
 
 ...wait a few seconds and you will see the transaction receipt in the output of the demo-rollup full node:
@@ -263,8 +249,12 @@ Options:
 Let's go ahead and import the transaction into the wallet
 
 ```bash,test-ci,bashtestmd:compare-output
-$ cargo run --bin sov-cli -- transactions import from-file bank --chain-id 0 --path ../test-data/requests/transfer.json
+cargo run --bin sov-cli -- transactions import from-file bank --chain-id 0 --path ../test-data/requests/transfer.json
+```
+
 Adding the following transaction to batch:
+
+```json
 {
   "tx": {
     "bank": {
@@ -287,11 +277,10 @@ This output indicates that the wallet has saved the transaction details for late
 
 #### 3. Submit the Transaction(s)
 
-You now have a batch with a single transaction in your wallet. If you want to submit any more transactions as part of this
-batch, you can import them now. Finally, let's submit your transaction to the rollup.
+You now have a batch with a single transaction in your wallet. If you want to submit any more transactions as part of this batch, you can import them now. Finally, let's submit your transaction to the rollup.
 
 ```bash,test-ci
-$ cargo run --bin sov-cli rpc submit-batch by-address sov1l6n2cku82yfqld30lanm2nfw43n2auc8clw7r5u5m6s7p8jrm4zqrr8r94
+cargo run --bin sov-cli rpc submit-batch by-address sov1l6n2cku82yfqld30lanm2nfw43n2auc8clw7r5u5m6s7p8jrm4zqrr8r94
 ```
 
 This command will use your default private key.
@@ -329,28 +318,19 @@ $ curl -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","method"
 
 > 🚧 This feature is under development! 🚧
 
-The above setup runs Celestia node locally to avoid any external network dependencies and to speed up development. Soon, the Sovereign SDK will also support connecting to the Celestia testnet using a Celestia light node running on your machine.
+The above setup runs Celestia node locally to avoid any external network dependencies and to speed up development. Soon, the SDK will also support connecting to the Celestia testnet using a Celestia light node running on your machine.
 
 ## How to Customize This Example
 
-Any time you change out the state transition function, zkVM, or DA layer of your rollup, you'll
-need to tweak this full-node code. At the very least, you'll need to modify the dependencies. In most cases,
-your full node will also need to be aware of the STF's initialization logic, and how it exposes RPC.
+Any time you change out the state transition function, zkVM, or DA layer of your rollup, you'll need to tweak this full-node code. At the very least, you'll need to modify the dependencies. In most cases, your full node will also need to be aware of the STF's initialization logic, and how it exposes RPC.
 
-Given that constraint, we won't try to give you specific instructions for supporting every imaginable
-combination of DA layers and State Transition Functions. Instead, we'll explain at a high level what
-tasks a full-node needs to accomplish.
+Given that constraint, we won't try to give you specific instructions for supporting every imaginable combination of DA layers and State Transition Functions. Instead, we'll explain at a high level what tasks a full-node needs to accomplish.
 
 ### 1. Initialize the DA Service
 
-The first _mandatory_ step is to initialize a DA service, which allows the full node implementation to
-communicate with the DA layer's RPC endpoints.
+The first _mandatory_ step is to initialize a DA service, which allows the full node implementation to communicate with the DA layer's RPC endpoints.
 
-If you're using Celestia as your DA layer, you can follow the instructions at the end
-of this document to set up a local full node, or connect to
-a remote node. Whichever option you pick, simply place the URL and authentication token
-in the `celestia_rollup_config.toml` file and it will be
-automatically picked up by the node implementation. For this tutorial, the Makefile below (which also helps start a local Celestia instance) handles this step for you.
+If you're using Celestia as your DA layer, you can follow the instructions at the end of this document to set up a local full node, or connect to a remote node. Whichever option you pick, simply place the URL and authentication token in the `celestia_rollup_config.toml` file and it will be automatically picked up by the node implementation. For this tutorial, the Makefile below (which also helps start a local Celestia instance) handles this step for you.
 
 ### 2. Run the Main Loop
 
@@ -361,6 +341,4 @@ The full node implements a simple loop for processing blocks. The workflow is:
 3. Iterate over the blobs, running `apply_batch`
 4. Run `stf.end_slot()`
 
-In this demo, we also keep a `ledger_db`, which stores information
-related to the chain's history - batches, transactions, receipts, etc.
-
+In this demo, we also keep a `ledger_db`, which stores information related to the chain's history - batches, transactions, receipts, etc.

@@ -29,7 +29,7 @@ cargo rustc --bin namespace_group_from_b64 \
     -Z sanitizer=address
 ```
 
-We don't default these options as they depend on the `rustc` version and might change in the future. For the list of available targets, check [Cargo.toml](./fuzz/Cargo.toml) under the `bin` section. We are currently not using optimized binaries as it might impact on how rocksdb is built. If you want to activate optimization, add `--release` after `rustc`.
+We don't default these options as they depend on the `rustc` version and might change in the future. For the list of available targets, check [Cargo.toml](./Cargo.toml) under the `bin` section. We are currently not using optimized binaries as it might impact on how rocksdb is built. If you want to activate optimization, add `--release` after `rustc`.
 
 Unfortunately, rustc doesn't support the `--bins` argument to build multiple binaries with custom compiler directives. We have to build every target individually. Below is a convenience [sed](https://www.gnu.org/software/sed/) script to build all targets.
 

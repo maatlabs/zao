@@ -3,16 +3,17 @@
 The `sov-nft-module` is a plug-and-play module designed to simplify the process of creating NFT (Non-Fungible Token) applications. It's customizable and can be integrated with other modules in the Sovereign SDK.
 
 ## Table of Contents
+
 - [Core Concepts](#core-concepts)
-    - [Collection](#collection)
-    - [NFT](#nft)
+  - [Collection](#collection)
+  - [NFT](#nft)
 - [Calls](#calls)
-    - [CreateCollection](#createcollection)
-    - [UpdateCollection](#updatecollection)
-    - [FreezeCollection](#freezecollection)
-    - [MintNft](#mintnft)
-    - [UpdateNft](#updatenft)
-    - [TransferNft](#transfernft)
+  - [CreateCollection](#createcollection)
+  - [UpdateCollection](#updatecollection)
+  - [FreezeCollection](#freezecollection)
+  - [MintNft](#mintnft)
+  - [UpdateNft](#updatenft)
+  - [TransferNft](#transfernft)
 - [Usage](#usage)
   - [Setup](#setup)
   - [Sov-cli](#sov-cli)
@@ -160,6 +161,7 @@ cargo run --bin sov-cli keys import -n nft_owner -p examples/test-data/keys/mint
 ```
 
 This imports two keys:
+
 - `nft_creator`: Used to create NFT collections and mint NFTs.
 - `nft_owner`: The owner of the minted NFTs.
 
@@ -179,7 +181,6 @@ cargo run --bin sov-cli rpc submit-batch by-nickname nft_creator
 You should see an output in the terminal running the rollup, indicating that the transaction has been accepted.
 
 **Query Collection**
-
 To verify that the collection was successfully created, you can run these CURL commands:
 
 ```bash
@@ -200,7 +201,6 @@ cargo run --bin sov-cli rpc submit-batch by-nickname nft_creator
 ```
 
 **Query NFT**
-
 Verify the NFT minting with this CURL command:
 
 ```bash
@@ -217,7 +217,6 @@ cargo run --bin sov-cli rpc submit-batch by-nickname nft_owner
 ```
 
 **Query Transfer**
-
 Confirm the transfer with this CURL command:
 
 ```bash
@@ -226,22 +225,26 @@ curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","metho
 
 This should show that the owner of the NFT has changed.
 
-You can perform other calls in a similar manner using the above commands as a reference, by providing the necessary JSON files and using the appropriate keys to submit the transactions.
+You can perform similar calls using the above commands as a reference, by providing the necessary JSON files and using the appropriate keys to submit the transactions.
 
 ### Queries
 
 There are 3 simple endpoints for queries to the RPC which can be customized.
-* `nft_getCollectionAddress`: This does not query state but is simply used to deterministically derive the collection address from a creator address and a collection name. It can also be run locally, but the RPC method is provided for convenience
+
+- `nft_getCollectionAddress`: This does not query state but is simply used to deterministically derive the collection address from a creator address and a collection name. It can also be run locally, but the RPC method is provided for convenience
+
 ```bash
 curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"nft_getCollectionAddress","params":["sov1l6n2cku82yfqld30lanm2nfw43n2auc8clw7r5u5m6s7p8jrm4zqrr8r94","Test Collection"],"id":1}' http://127.0.0.1:12345
 ```
-* `nft_getCollection`: Takes a collection address and returns the collection details.
+
+- `nft_getCollection`: Takes a collection address and returns the collection details.
+
 ```bash
 curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"nft_getCollection","params":["sov1j2e3dh76nmuw4gctrqduh0wzqdny8c62z36r2q3883rknw3ky3vsk9g02a"],"id":1}' http://127.0.0.1:12345
 ```
-* `nft_getNft`: Takes the tokenId and collection address that the NFT belongs to and returns the NFT details
+
+- `nft_getNft`: Takes the tokenId and collection address that the NFT belongs to and returns the NFT details
+
 ```bash
 curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"nft_getNft","params":["sov1j2e3dh76nmuw4gctrqduh0wzqdny8c62z36r2q3883rknw3ky3vsk9g02a", 42],"id":1}' http://127.0.0.1:12345
 ```
-
-

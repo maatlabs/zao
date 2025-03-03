@@ -42,6 +42,7 @@ $ echo $MY_PERSONAL_GITHUB_TOKEN | docker login ghcr.io -u $MY_GITHUB_USERNAME -
 ## Multiple sequencers
 
 To have multiple sequencers, a few conditions needs to be met:
+
 - validator must know the number of sequencers to provision them with accounts and coins
 - each sequencer must have a unique id and each id has to be a consecutive natural number
   starting from 0. (eg. 0, 1, 2)

@@ -1,8 +1,6 @@
 ## Enabling RPC via Module System Macros
 
-In the Module System, we provide handy macros to make it easy to generate RPC server implementations. In this document,
-we'll walk you through all of the steps that you need to take to enable RPC if you're implementing your rollup
-from scratch.
+In the Module System, we provide handy macros to make it easy to generate RPC server implementations. In this document, we'll walk you through all the steps that you need to take to enable RPC if you're implementing your rollup from scratch.
 
 There are 5 steps that need to be completed to enable RPC on the full node:
 
@@ -13,10 +11,7 @@ There are 5 steps that need to be completed to enable RPC on the full node:
 
 ### Step 1: Generate an RPC Server for your Module
 
-To add an RPC method to a module, simply annotate the desired `impl` block with the `rpc_gen` macro and tag each
-method you want to expose with the `rpc_method` annotation. As noted in its `rustdoc`s, the `rpc_gen` macro
-has identical syntax to [`jsonrpsee::rpc`](https://docs.rs/jsonrpsee-proc-macros/0.18.2/jsonrpsee_proc_macros/attr.rpc.html)
-except that the `method` annotation has been renamed to `rpc_method` to clarify its purpose.
+To add an RPC method to a module, simply annotate the desired `impl` block with the `rpc_gen` macro and tag each method you want to expose with the `rpc_method` annotation. As noted in its `rustdoc`s, the `rpc_gen` macro has identical syntax to [`jsonrpsee::rpc`](https://docs.rs/jsonrpsee-proc-macros/0.18.2/jsonrpsee_proc_macros/attr.rpc.html) except that the `method` annotation has been renamed to `rpc_method` to clarify its purpose.
 
 ```rust
 // This code goes in your module's query.rs file
@@ -48,14 +43,11 @@ impl<C: Context> Bank<C> {
 This example code will generate an RPC module which can process the `bank_balanceOf` and `bank_supplyOf` queries.
 
 Under the hood `rpc_gen` and `rpc_method` create two traits - one called <module_name>RpcImpl and one called <module_name>RpcServer.
-It's important to note that the \_RpcImpl and \_RpcServer traits do not need to be implemented - this is done automatically by the SDK.
-However, they do need to be imported to the file where the `expose_rpc` macro is called.
+It's important to note that the \_RpcImpl and \_RpcServer traits do not need to be implemented - this is done automatically by the SDK. However, they do need to be imported to the file where the `expose_rpc` macro is called.
 
 ### Step 2: Expose Your RPC Server
 
-The next layer of abstraction where we need to think about RPC is the `Runtime`. Just because a module defines
-some RPC methods doesn't necessarily mean that we want to use them. So, when we're building a `Runtime`, we have
-to enable RPC servers of the modules.
+The next layer of abstraction where we need to think about RPC is the `Runtime`. Just because a module defines some RPC methods doesn't necessarily mean that we want to use them. So, when we're building a `Runtime`, we have to enable RPC servers of the modules.
 
 ```rust
 // This code goes in your state transition function crate. For example demo-stf/runtime.rs
@@ -78,10 +70,7 @@ Note that`expose_rpc` takes a tuple as argument, each element of the tuple is a 
 
 ### Step 3: Instantiate RPC Methods
 
-Now that we've implemented all of the necessary traits, a `get_rpc_methods` function will be auto-generated.
-To use it, simply import it from your state transition function. Given access to `Storage`, this function instantiates
-[`jsonrpsee::Methods`](https://docs.rs/jsonrpsee/latest/jsonrpsee/struct.Methods.html) which your full node can
-execute.
+Now that we've implemented all the necessary traits, a `get_rpc_methods` function will be auto-generated. To use it, simply import it from your state transition function. Given access to `Storage`, this function instantiates [`jsonrpsee::Methods`](https://docs.rs/jsonrpsee/latest/jsonrpsee/struct.Methods.html) which your full node can execute.
 
 ```rust
 // This code goes in your full node implementation. For example demo-rollup/main.rs
@@ -89,12 +78,12 @@ use demo_stf::runtime::get_rpc_methods;
 
 #[tokio::main]
 fn main() {
-	// ...
+ // ...
     let mut app = App...;
 
     let storage = app.get_storage();
     let methods = get_rpc_methods(storage);
-	// ...
+ // ...
 }
 ```
 
@@ -114,7 +103,7 @@ async fn start_rpc_server(methods: RpcModule<()>, address: SocketAddr) {
 
 #[tokio::main]
 fn main() {
-	// ...
+ // ...
     let mut demo_runner = App...;
 
     let storage = demo_runner.get_storage();
@@ -128,9 +117,11 @@ fn main() {
 ```
 
 ## Enabling Archival queries for RPC
-* We use `working_set: &mut WorkingSet<C>` in order to query state. `WorkingSet` has a function `working_set.set_archival_version(v)` where v is of type `u64` and represents the block height. 
+
+* We use `working_set: &mut WorkingSet<C>` in order to query state. `WorkingSet` has a function `working_set.set_archival_version(v)` where v is of type `u64` and represents the block height.
 * Once the `set_archival_version` is called, the working_set is configured to query against the state at height `v`.
 * To modify an RPC query of the form
+
 ```rust
 pub fn balance_of(
          &self,
@@ -143,7 +134,9 @@ pub fn balance_of(
     })
 }
 ```
+
 We need to make the following changes
+
 ```rust
 pub fn balance_of(
          &self,
@@ -160,4 +153,5 @@ pub fn balance_of(
     })
 }
 ```
-* NOTE: `set_archival_version` handles configuring `WorkingSet` for both JMT state as well as accessory state
+
+* NOTE: `set_archival_version` handles configuring `WorkingSet` for both JMT state as well as accessory state.

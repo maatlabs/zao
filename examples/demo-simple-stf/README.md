@@ -6,9 +6,7 @@ In this tutorial, we’ll build an STF which checks if the input data (called a 
 
 ## Implementing the State Transition Function
 
-The [State Transition Function
-interface](../../rollup-interface/specs/interfaces/stf.md) serves as the core component of our rollup, where the business logic will reside.
-Implementations of this trait can be integrated with any zkVM and DA Layer resulting in a fully functional rollup. To begin, we will create a structure called `CheckHashPreimageStf`, and implement the `StateTransitionFunction` trait for it. You can find the complete code in the `lib.rs` file, but we will go over the most important parts here:
+The [State Transition Function interface](../../rollup-interface/specs/interfaces/stf.md) serves as the core component of our rollup, where the business logic will reside. Implementations of this trait can be integrated with any zkVM and DA Layer resulting in a fully functional rollup. To begin, we will create a structure called `CheckHashPreimageStf`, and implement the `StateTransitionFunction` trait for it. You can find the complete code in the `lib.rs` file, but we will go over the most important parts here:
 
 ```rust, ignore
 pub struct CheckHashPreimageStf {}
@@ -145,17 +143,14 @@ The last method is `end_slot`, like before the implementation is trivial:
 
 ### Exercise
 
-In the current implementation, every blob contains the data we pass to the hash function.
-As an exercise, you can introduce the concept of transactions. In this scenario,
-the blob would contain multiple transactions (containing data) that we can loop over to check hash equality.
-The first transaction that finds the correct hash would break the loop and return early.
+In the current implementation, every blob contains the data we pass to the hash function. As an exercise, you can introduce the concept of transactions. In this scenario, the blob would contain multiple transactions (containing data) that we can loop over to check hash equality. The first transaction that finds the correct hash would break the loop and return early.
 
 ## Testing
 
 The `sov-mock-da` and `sov-mock-zkvm` crates provide two utilities that are useful for testing:
 
 1. The `sov_mock_zkvm::MockZkvm` is an implementation of the `Zkvm` trait that can be used in tests.
-2. The `sov_mock_da::MockBlob` is an implementation of the `BlobTransactionTrait` trait that can be used in tests. It accepts an `A: BasicAddress` as a generic parameter. For testing purposes, we use `MockAddress` struct from the same module 
+2. The `sov_mock_da::MockBlob` is an implementation of the `BlobTransactionTrait` trait that can be used in tests. It accepts an `A: BasicAddress` as a generic parameter. For testing purposes, we use `MockAddress` struct from the same module.
 
 You can find more details in the `stf_test.rs` file.
 
