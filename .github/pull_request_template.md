@@ -1,12 +1,26 @@
-# Description
+# Motivation
+<!-- Please mention the issue fixed by this PR or detailed motivation -->
+Closes #
+<!-- `Closes #XXXX, closes #XXXX, ...` links mentioned issues to this PR and automatically closes them when it's merged -->
 
+## Changes
+<!-- Please describe in detail the changes made -->
 
-## Linked Issues
-- Fixes # (issue, if applicable)
-- Related to # (issue) 
+## Test Plan
+<!-- Please specify how these changes were tested 
+(e.g. unit tests, manual testing, etc.) -->
 
-## Testing
-Describe how these changes were tested. If you've added new features, have you added unit tests?
+## TODO
+<!-- This section should be removed when all items are complete -->
+- [ ] Explain motivation or link existing issue(s)
+- [ ] Test changes and document test plan
+- [ ] Update documentation as needed
 
-## Docs
-Describe where this code is documented. If it changes a documented interface, have the docs been updated?
+## DevOps Notes
+<!-- Please uncheck these items as applicable to make DevOps aware of changes that may affect releases -->
+- [x] This PR does not require configuration changes (e.g., environment variables, GitHub secrets, VM resources)
+- [x] This PR does not affect public APIs
+- [x] This PR does not rely on a new version of external services
+- [x] This PR does not make changes to log messages (which monitoring infrastructure may rely on)
+
+By submitting this pull request, I confirm that my contribution is made under the terms of the Apache 2.0 license.

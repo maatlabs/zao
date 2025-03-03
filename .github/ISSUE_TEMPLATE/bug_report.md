@@ -2,33 +2,24 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
-assignees: ''
-
+labels: 'type: bug'
 ---
 
-## Summary
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-<!-- Short summary of what is wrong -->
+**Please provide the steps to reproduce and if possible a minimal demo of the problem.**
 
-## Steps to reproduce
+**Expected behavior**
+A clear and concise description of what you expected to happen.
 
-1.
-2.
+**Screenshots / logs**
+If applicable, add screenshots and/or logs to help explain your problem.
 
-<!-- Detailed and easy to follow steps on how to reproduce this issue -->
-<!-- The better instructions, the faster we can find and fix the bug -->
+**Relevant environment details:**
 
+- OS: [e.g. MacOS]
+- etc
 
-## Expected Result
-
-<!-- What was expected from the user's perspective -->
-
-## Actual Result
-
-<!-- What actually happened -->
-
-
-## Additional Information
-
-<!-- Anything that can help investigate this bug, such as versions, OS or any relevant info -->
+**Additional context**
+Add any other context about the problem here.

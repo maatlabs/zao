@@ -45,21 +45,21 @@ on:
   merge_group:
     types: ["checks_requested"]
   push:
-    branches: ["nightly", "stable"]
+    branches: ["main"]
   pull_request:
-    branches: ["nightly", "stable"]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
 
-# Automatically cancels a job if a new commit if pushed to the same PR, branch, or tag.
+# Automatically cancels a job if a new commit is pushed to the same PR, branch, or tag.
 # Source: <https://stackoverflow.com/a/72408109/5148606>
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  # Except in `nightly` and `stable` branches! Any cancelled job will cause the
+  # Except in `main` branch! Any cancelled job will cause the
   # CI run to fail, and we want to keep a clean history for major branches.
-  cancel-in-progress: ${{ (github.ref != 'refs/heads/nightly') && (github.ref != 'refs/heads/stable') }}
+  cancel-in-progress: ${{ (github.ref != 'refs/heads/main') }}
 
 jobs:
   check-aggregate:
@@ -115,7 +115,7 @@ jobs:
         with:
           cache-provider: "buildjet"
           shared-key: cargo-check-cache
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: |
             .
             fuzz
@@ -148,7 +148,7 @@ jobs:
         uses: taiki-e/install-action@cargo-hack
       - uses: Swatinem/rust-cache@v2
         with:
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Run check
         run: make check-no-std
 
@@ -179,7 +179,7 @@ jobs:
         with:
           cache-provider: "buildjet"
           shared-key: cargo-check-cache
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: |
             .
             fuzz
@@ -217,7 +217,7 @@ jobs:
         with:
           cache-provider: "buildjet"
           shared-key: cargo-check-cache
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: |
             .
             fuzz
@@ -255,7 +255,7 @@ jobs:
         with:
           cache-provider: "buildjet"
           shared-key: cargo-check-cache
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: |
             .
             fuzz
@@ -293,7 +293,7 @@ jobs:
         with:
           cache-provider: "buildjet"
           shared-key: cargo-check-cache
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: |
             .
             fuzz
@@ -327,7 +327,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-provider: "buildjet"
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - run: cargo nextest run --workspace --all-features
   test:
     name: test
@@ -354,7 +354,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-provider: "buildjet"
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       # `cargo-nextest` does not support doctests (yet?), so we have to run them
       # separately.
       # TODO: https://github.com/nextest-rs/nextest/issues/16
@@ -390,7 +390,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-provider: "buildjet"
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: cargo generate-lockfile
         if: hashFiles('Cargo.lock') == ''
         run: cargo generate-lockfile
@@ -429,7 +429,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-provider: "buildjet"
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       # The docs' artifact tends to become quite large with all the
       # dependencies, so we don't include them.
       - run: cargo doc --no-deps --all-features
@@ -503,7 +503,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-provider: "buildjet"
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Compile README.md to Bash
         run: cargo run --bin bashtestmd -- --input examples/demo-rollup/README_CELESTIA.md --output demo-rollup-readme.sh --tag test-ci
       - run: cat demo-rollup-readme.sh
@@ -533,7 +533,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           cache-provider: "buildjet"
-          save-if: ${{ github.ref == 'refs/heads/nightly' }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Compile README.md to Bash
         run: cargo run --bin bashtestmd -- --input examples/demo-rollup/README.md --output demo-rollup-readme.sh --tag test-ci
       - run: cat demo-rollup-readme.sh
